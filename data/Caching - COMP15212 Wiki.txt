@@ -1,0 +1,40 @@
+This is not the place to treat caches and caching in any great detail; that would be the domain of a more hardware-oriented course unit. However the principle of caching is used in several places in a typical operating system, so it is important to have some appreciation of cache action.
+Fundamentally, in computers a cache is a copy of a small subset of some large data set which (because it is small) is fast and convenient to get at.
+Analogy: you might ‘cache’ some books on your desk – more convenient than visiting the library on a daily basis.   Example: your web browser probably ‘caches’ pages which you have visited, in case you want to visit again; if you do it is quicker than re-fetching them from around the world.
+To work effectively, caches rely on:
+Temporal locality: if something was used recently it will probably be used again.
+Spacial locality: if you used one address you will probably want ‘nearby’ addresses;
+Executing computer processes usually have strong locality (both kinds!) with respect to both code and data.
+### Cache operation (in short)
+
+A cache monitors outgoing requests (such as an address heading towards memory) and, if it recognises it, intercepts the request and satisfies it locally. Statistically, this increases the efficiency (i.e. higher speed and lower energy needs).
+If the cache doesn’t recognise the reference the operation proceeds as it would have without the cache; however the reference may be cached as well as future references are quite probable.
+### Examples of caching in operating systems:
+
+The memory cache (often just the “cache”). This intercepts memory addresses in loads and stores.
+The Translation Look-aside Buffer (TLB). This intercepts page translations.
+Virtual Memory where the addressable memory itself is the cache and the overall physical memory is enlarged using cheaper backing store, such as magnetic disk.
+A hard disk drive is slow, compared to a computer’s electronic RAM – even compared to the ‘slow’ main memory. An operating system can use some RAM as a “page cache” which keeps copies of data which are logically on disk which may be wanted again in the near future.
+These may include both files which have been read recently and evicted pages. This cache can also act as a write buffer for the disk.
+### Examples of caching not in operating systems:
+
+A network router needs to look up how to forward each packet and there can be very many possible destinations. However it is likely that if one packet is routed to a particular place then more examples will follow shortly. Thus, having performed one translation, recent routeing translations may be cached for efficiency.
+A Web browser typically keeps the most recently accessed pages in local filestore. Users tend to revisit or return to pages so this alleviates the need for slow, network communications in future. Of course, some pages are ‘volatile’ and need fetching again, so the issue of cacheability is also important.
+Think of your own example …
+### Cache principle, demonstration
+
+This demonstration is intended to illustrate a principle; the items in the cache will not really be high-level language statements! However they serve as ‘things’ which can be fetched and cached.
+Note that:
+initially execution is quite slow, as each ‘instruction’ causes a cache miss with a corresponding delay.
+program behaviour tends to have locality; once the cache is filled it speeds up execution considerably.
+as the program continues, sometimes there are more cache misses as the “working set” changes.
+the numbers on the right of the cache indicate the last time each line was accessed.
+This is used when selecting a line to replace using the Least Recently Used (LRU) algorithm.
+the miss penalty here is proportionately quite small.
+A more typical penalty would be rather dull to watch though.
+“IPC” (Instructions Per Clock) shows the average number of lines of code executed per cycle.
+In an ‘ideal’ world this would be 1.00. Without the cache this would be 0.33.
+Observe how this roughly stabilises on a compromise value once the cache is being exploited.
+The example is contrived so that items are cached in different places in different iterations: it may be worth (once) running ~100+ steps to see this.
+## Next
+

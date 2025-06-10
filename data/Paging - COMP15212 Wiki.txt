@@ -1,0 +1,70 @@
+Usually a virtual memory system will divide its memory into pages. A page is (basically) a fixed size block of memory. The principle is that any page can be mapped into any page frame, invisibly to the user.
+Think of all the pages’ data really residing on the disk. The memory simply holds a copy of some of these pages. In this way the memory is just caching recently used pages.
+In reality it probably won’t quite be like this (to save space) but it is a good conceptual model to start with.
+### Page look-up
+
+The processor produces a virtual address from which the MMU looks up a page reference; the process is illustrated in the memory mapping article. If the page is present in physical memory the translated (physical) address is passed on and everything just works. The look-up is all done by the MMU hardware so this can all run as part of a user’s application process.
+If the virtual page is marked as not resident, things become more complicated and the operating system needs to intervene. This is triggered by the MMU hardware indicating a page fault. This loading of memory when required is sometimes referred to as “demand paging”.
+### Page faults
+
+A page fault is a form of a memory fault: a hardware-level exception which causes a form of operating system call. The information about the ‘problem’ is maintained so the processor can recover.
+A page fault is caused when a virtual address fails to be translated into a physical address – usually because the page is not present in the physical memory. They are usually recoverable-from, so “fault” is a bit of a misnomer!
+The exception handler (part of the O.S.) must determine that this is a page fault and not some other form of memory fault. This checks that the virtual address and operation (such as a write) is legitimate.
+Some faults will be due to bugs, hacking etc. These will be trapped out here and the process terminated.
+If this is a genuine page fault the page must now be “swapped in”.
+### Paging (a.k.a. “swapping”)
+
+The O.S. has to find a page frame for the desired page. In a memory mapped system this can be anywhere in the physical RAM; it may involve evicting an existing page. There are many factors which can be considered when choosing a page to evict.
+If the evicted page is simply a copy of a page on disk, it can simply be overwritten.
+This is usually true of code pages – and sometimes data too.
+If the evicted page has been modified then it must be copied back to disk – a time-consuming process.
+The chosen physical page is loaded with the appropriate contents from disk (or an equivalent store, but probably disk!). The page tables are modified appropriately.
+### Restart
+
+The page tables need to be updated to reflect the new state of the system; the memory mapping has changed.
+The O.S. sorts out the state of the faulted process; for most processors this means ensuring that it was as if it had stopped just before the faulting operation.
+The faulting operation is ‘returned’ to as if it had been a ‘call’ operation. This time the page should not fault and the application proceeds.
+The paging process is not visible to the application code; it need not care if it happens or not. This is a big advantage. The process may be ‘visible’ to the user in the sense that it is time consuming, so ‘running out’ of RAM can result in a lot of paging and a noticeable slowdown in overall execution speed.
+### In the meantime …
+
+All this moving data to/from disk is very time consuming. The disk access time is probably in excess of 10 ms which might be tens of millions of instruction times. Roughly double this estimate if a write is needed as well as a read.
+Paging is going to take some time: probably several milliseconds if the page has to be fetched from magnetic disk.
+Rather than tie up the processor, the job of data movement can be passed to a DMA channel and the process can be blocked.
+The scheduler can then be called to find something else to run whilst data is (un)loaded in the background.
+The completion of the DMA transfer(s) will unblock this process again and – sometime after that – it will be rescheduled.
+This system is only running a single process. It has only half the number of pages of physical memory needed to completely fill the virtual address space.
+Click on a virtual memory page to request an access: clicking on the left-hand side simulates a read access; clicking on the right-hand side simulates a write access. In either case the page will be fetched if it is not already present in the physical memory.
+Remember: the virtual memory is just a space in which the physical memory appears.
+When a write has taken place the page is ‘dirty’ as the copy on the disk will be out of date. This is indicated by a darker colour in the physical memory.
+Buttons:
+“Cyclic” switches to the default cyclic page replacement policy.
+“LRU” switches to a Least Recently Used page replacement policy.
+“Dirty?” preferentially evicts ‘clean’ pages.
+Evicting clean pages preferentially makes the paging process faster (no write-back) but reduces the available choices when dirty pages are finished are no longer being used.
+Some compromise is required in practice.
+Evicting clean pages preferentially makes the paging process faster (no write-back) but reduces the available choices when dirty pages are finished are no longer being used.
+Some compromise is required in practice.
+In this model, each disk operation costs 4 cycles: in practice this would be orders of magnitude higher, but that would be uninteresting to watch. Whilst waiting, the processor (you in the demonstration!) would normally context switch whilst the disk transfer(s) would be handled using DMA.
+These are all caching principles.
+In the demonstration, note:
+Status messages describe the sequence of processes as they take place.
+The time is in fixed units and the count is the number of operations completed.
+‘IPC’ is the ratio of these values: ideally 1, rarely even close to that.
+Note that paging takes some time and the computer can do something else whilst it’s waiting. ’Something else’ might cause another page fault. In the worst case this can lead to page thrashing.
+### Want more detail?
+
+There is another article with more detail on (and a picture of!) the states which may be used to control and track a page of virtual memory.
+### Minor page faults
+
+A page fault may not result in disk activity because the page may already be present! Imagine starting a second copy of some large application: the O.S. can spot this and share the code; when asked for a new virtual page the page tables can be pointed to the existing copy. This saves time and memory.
+A simple, if slightly misleading, view of a paged virtual memory is to imagine all the storage logically residing on magnetic disk storage; when data is wanted the computer’s RAM acts as a cache for the parts which are interesting at the time.
+This is slightly inaccurate in detail because a cache is typically (logically) much smaller than the store it is caching and just keeps a copy of data whereas a workstation’s RAM and disk “swap space” are closer to the same size, so data may end up being swapped. However it is a useful way to illustrate the operation.
+## Cache operation
+
+A request is made to memory. The cache intercepts the request and provides the data if it can be satisfied locally; otherwise it fetches the data from the slower RAM. Having performed a fetch it is likely that it keeps the ‘new’ data in the cache, which might entail evicting some ‘old’ data, back to to the slower RAM.
+## Paging
+
+A request is made to RAM. The MMU intercepts (and translates) the request and fetches the data if it is in RAM; otherwise it fetches the data from the slower disk. Having performed a fetch it is likely that it keeps the ‘new’ data in the RAM, which might entail evicting some ‘old’ data, back to to the slower disk.
+In both cases it is assumed that locality results in a ‘hit’ most of the time – a fairly safe bet for most code and data structures.
+## Next
+

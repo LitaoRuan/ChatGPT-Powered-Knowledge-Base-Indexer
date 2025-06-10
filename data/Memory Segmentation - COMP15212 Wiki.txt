@@ -1,0 +1,20 @@
+Note: the term “segmentation” is used in ways which differ in detail.
+The von Neumann computing architecture – by far the most common – has a single memory address space which is shared by code and data in all their forms. This is a flexible, and (largely) convenient, model.
+The memory is divided logically into a number of regions in any given application. The most obvious division is perhaps ‘code’ and ‘data’ where ‘code’ refers to the processor’s instructions – usually not modifiable at run-time and ‘data’ encompasses variables, which may be written. Note that not all ‘data’ might change, however: there is often ‘read-only data’, such as message strings or look-up tables, which are constant.
+Each process will have its own set of segments.
+It is sometimes convenient to group parts of memory together in these logical divisions, which are typically referred to as “segments”. By nature, a particular segment will have a set of attributes (such as can or cannot be written to) and different segments will have different attributes. There can be an arbitrary number of segments and, unlike pages, they will typically have different sizes.
+Historically, segments have sometimes been supported as (apparently) dedicated parts memories, each with addresses starting at 00…00 and finishing at some arbitrary limit (the segment size). These can be mapped into physical memory using dedicated hardware; this is cheap in hardware … but hardware is now cheap, so it is uncommon. (You may still see it in some literature; very unlikely in the Real World, currently.) Instead the logical segment will typically be mapped using hardware pages and the pages will be organised by software.
+Question: can you spot any advantages in using paging hardware over trying to map variable-sized segments into RAM?
+Mapping a segment using page tables is more expensive than having a single mapping entry for the segment, but it brings a couple of useful advantages.
+Because each page can be mapped individually, the segment does not need a (possibly, large) contiguous space in the physical memory. The pages can be used to fragment the segment. This gives much more flexibility and (largely) overcomes the problem of having enough memory in total to accommodate another segment, but not enough in one place.
+By implication, if necessary a logical segment can be increased in size whilst the program is running without worrying about overlapping other memory. This could happen if, for example, more memory was being demanded for the stack or the heap.
+With virtual memory only some of the pages in a segment – those which are actually in use – need be present in physical memory at any time.
+As an example, consider a code segment. In any given run, quite a lot of the code may never be needed: for example code to handle errors is important to have, but rarely executes. With paging and virtual memory, unwanted code (or data) need not occupy valuable physical memory as it is only fetched if it is needed.
+There’s a video here which might help explain this (8 mins.).
+This does not, necessarily, mean the operating system software is not keeping segment tables so that pages can be allocated appropriately.
+The name persists, of course, with ‘segmentation faults’. You can also find such logical divisions in software tools: a nice contemporary example is in the organisation of files which provide a standard for Unix ‘binaries’.
+Try typing file <binary> at a Unix command prompt, where ‘<binary>’ is a binary’s filename (/path).
+If you have access to tools such as GNU Binutils you can ‘pull apart’ ELF files with readelf. However, note that an ELF “section” is not quite the same as an O.S. “segment”. (readelf -l <binary> may help a bit.)
+As mentioned at the top of the page, the word “segmentation” is sometimes used in different ways. A particular example is Intel x86 segmentation which has a certain legacy and may be of passing interest.
+20
+30

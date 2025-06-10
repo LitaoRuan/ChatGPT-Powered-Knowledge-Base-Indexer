@@ -1,0 +1,12 @@
+You should be happy with the basic memory model before studying this article.
+A memory cache is a small, fast memory ‘close’ to the processor, used in high-performance computers. In the highest performance machines the cache may comprise two (or more) ‘levels’: smallest but fastest close to the processor, slower but larger further out. These are typically called “level 1” (the closest to the processor), “level 2” etc.
+This cache is only one example of where the principle of caching is used. For this course unit the principle is more important than any particular example, as the general principle of caching applies in several other circumstances.   If you like videos, there’s a brief (5 min.) introduction to caches here.
+Because speed is important, it is typical for level 1 cache to use virtual addresses, i.e. it is a “virtual cache”. Lower cache levels will typically be below any memory mapping and thus use physical addresses.
+The cache is largely self-managing (i.e. the hardware does the job) but occasionally needs software intervention – the job of an operating system, when present. Most obviously (perhaps) is at context-switch time, after which a particular virtual address will have a different meaning, thus a virtual (level 1) cache will be invalid and requires flushing.
+A typical level 2 cache may use physical addresses and, as these are unique, may retain its contents through multiple process changes, possibly until they become useful again to the current process.
+The operating system scheduler needs to be aware of any caches which must be flushed.
+### Multiprocessor cache hierarchy
+
+A shared-memory multiprocessor (such as a typical workstation) will probably have separate level 1 caches for instructions and data (using virtual addresses). Further down the cache hierarchy the use of physical addresses means that all the processor ‘cores’ can share a physical cache; this gives better overall utilisation.
+20
+30

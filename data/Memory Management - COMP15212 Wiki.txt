@@ -1,0 +1,16 @@
+This page looks at the software tasks involved in managing memory as a resource; for an overview of the hardware used to support memory mapping and memory protection, see MMU.
+For one reason or another, there is a limited memory resource in a computer. In a simple system, without virtual memory, it is perhaps most obvious that, as one process uses up some proportion of the memory it becomes unavailable for others. With virtual memory and paging some of the restrictions can be bypassed (up to a point) but the problems still arise.
+Any process will require one or more logical memory segments. These are contiguous parts of the address space. In some cases the memory can be allocated when the process starts – for example the program code is probably (but not always!) a known length and there is likely to be some static data. In other cases, memory is allocated dynamically so the exact memory needs cannot be determined in advance.
+Example: every time you create a new() instance in Java there are some more variables created; the computer has to keep them somewhere.
+Whilst the pattern of segments may vary there are some typical example areas which occur in most processes.
+Memory management can be done by both the application and the O.S. Sometimes an application will request ‘large’ blocks of memory and then allocate from them, thus saving some (expensive) system calls. However in the end it is the OS which is responsible for the memory as a resource and the management principles are similar, even if the application takes on some of the responsibility.
+The operating system can keep records of the memory in use and – in a virtual memory environment – which physical pages are in use, and for what.
+The O.S. may need to:
+allocate spaces when a process is loaded
+set up pages in a virtual memory system
+set up pages in a virtual memory system
+manage access permissions
+allocate additional space if the stack or heap overflow
+keep track of a process’ use and recover the resource when the process terminates.
+## Next
+

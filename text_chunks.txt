@@ -1,0 +1,441 @@
+The purposes of this page are:
+to introduce the concept of virtual and physical addresses
+to look at the process of address translation
+Computer memory is a physical storage medium; it holds one data item per location (address).
+A running process uses an address to specify a location to load (read) data from or store (write) data to memory.
+Each process has its own, independent set of addresses it wants to use.
+In a multiprocessing system it is important that processes do not interfere with each other.
+It is possible to resolve this issue by compiling and selecting the processes very carefully – but this is not a particularly convenient solution. A common approach is to use virtual memory.
+Each process can attempt to use any virtual address and there can be many overlaps in values
+<--CHUNK-END-->
+However, a virtual address is pointless by itself - it needs to point to some data, most likely in some physical location, in order to be useful to a program!
+In a virtual memory system, a process’ address is referred to as a “virtual address”; this is translated to a physical address such that each physical location has a single correspondence with a process-plus-virtual-address combination.
+A simple way to do this would be to have (say) four times as much physical memory than the virtual address could reach, then concatenate the process number {0,1,2,3} and the virtual address.
+This is a poor solution though, in that it requires a lot of memory (expensive!) and yet supports a limited number (four, here) of processes.
+So, usually, this is not a practical approach.
+### Observations:
+
+Very few processes use the whole of their virtual address space.
+It may be hard to predict which virtual addresses a given process chooses to use.
+There is typically significant locality of access: if one address is used it is likely that addresses around it are also used.
+Examples: instructions in a program; stack data; objects …
+These properties are therefore exploited when memory mapping virtual to physical addresses, a process usually called “address translation”.
+(Note: it is important to understand the next bit, so take your time.)
+### Address translation
+
+Here is an illustration of address translation, in a miniature, (8-bit) form.
+Points to note:
+Addresses are translated from a virtual address space (the addresses the application is aware of) to a physical address which the memory hardware deals with. The O.S
+<--CHUNK-END-->
+is involved because it sets up the translations.
+Addresses are not translated individually: they are organised into pages which share a translation.
+This keeps the size of the tables manageable.
+In this example, each page contains 32 (25) bytes: real pages are a bit larger than this.
+In this example, there are only 8 (23) pages: real systems will have a few more.
+Addresses are not translated individually: they are organised into pages which share a translation.
+This keeps the size of the tables manageable.
+In this example, each page contains 32 (25) bytes: real pages are a bit larger than this.
+In this example, there are only 8 (23) pages: real systems will have a few more.
+In this example, each page contains 32 (25) bytes: real pages are a bit larger than this.
+In this example, there are only 8 (23) pages: real systems will have a few more.
+The most significant bits of the address are used to define the page number
+<--CHUNK-END-->
+Only the page number is translated.
+Translations are an arbitrary look-up process in a page table.
+It is possible to alias more than one virtual page to the same physical page (try it) – although this is not usually useful in practice.
+Not all virtual pages need an allocation of physical RAM.
+A page can be marked as ‘invalid’ if it is not wanted.
+In a real system (larger virtual space) most pages are not wanted.
+Translations are an arbitrary look-up process in a page table.
+It is possible to alias more than one virtual page to the same physical page (try it) – although this is not usually useful in practice.
+Not all virtual pages need an allocation of physical RAM.
+A page can be marked as ‘invalid’ if it is not wanted.
+In a real system (larger virtual space) most pages are not wanted.
+The page table may have some ‘spare’ bits which can be used for other purposes.
+In the example below, there is an 8-bit entry with 1 bit used for validity and another 3 bits used for the physical page number. Other bits are suggested by ‘?’ here. Some of these bits can be used for purposes such as memory protection.
+Exercise: play with this mechanism until you understand the principle.
+ 
+Click a page table entry to change the valid bit and set the page frame number.
+Click a page table entry to change the valid bit and set the page frame number.
+Practically, the mapping is done in hardware by a Memory Management Unit (MMU) which usually has its page tables stored in RAM
+<--CHUNK-END-->
+(Here the (single) page table has been drawn separately, for clarity.)
+### Larger address spaces
+
+Real memory mapping has to deal with 32- or 64-bit addresses and is a bit more complicated, but the principle is still the same. The problem comes from the potential size of the tables as each process needs a page table with as many entries as there could be pages.
+Illustration A ‘small’ utility (e.g. a version of ls) might be about 111 KiB (one version looked at was). In a 32-bit system with 4 KiB pages this would use about (depending on its exact address alignment) 28 pages; a single-level page table would require 220 entries for this process. As each entry is probably 32 bits long, this requires 4 MiB to support the 100+KiB process. This is poor utilisation. In an equivalent 64-bit system 252 64 bit entries: that’s 32 PiB or “a #*|! of a lot” of memory to support each process. Totally infeasible in a single array.
+This is problem is addressed (excuse the pun!) by using hierarchical page tables.
+See also memory sizes.
+20
+30
+
+<--CHUNK-END-->
+It would be a good strategy to be familiar at the simplified principles of memory mapping and memory protection before getting too deeply into this article, as the MMU is where they meet.
+Caveat: different MMUs will be implemented in ways which differ in detail. This page is intended to illustrate the general principles in a particular way.
+## MMU Definition
+
+A Memory Management Unit (MMU) is the hardware system which performs both virtual memory mapping and checks the current privilege to keep user processes separated from the operating system — and each other. In addition it helps to prevent caching of ‘volatile’ memory regions (such as areas containing I/O peripherals.
+a virtual memory address
+an operation: read/write, maybe a transfer size
+the processor’s privilege information
+a physical memory address
+cachability (etc.) information
+or
+a rejection (memory fault) indicating:
+no physical memory (currently) mapped to the requested page
+illegal operation (e.g. writing to a ‘read only’ area)
+privilege violation (e.g. user tries to get at O.S. space)
+no physical memory (currently) mapped to the requested page
+illegal operation (e.g. writing to a ‘read only’ area)
+privilege violation (e.g. user tries to get at O.S. space)
+## Example
+
+A typical MMU in a virtual memory system will use a paging system. The page tables specify the translation from the virtual to the physical page addresses; only one set of page tables will be present at any time (green, in the figure below) although other pages may still be present until the physical memory is ‘overflowing’, after which they may need to be “paged out”.
+All the current process’ pages must be in the page tables but they need not all be physically present: they may have been ‘backed off’ onto disk
+<--CHUNK-END-->
+In this case the MMU notes the fact and the O.S. will have to fetch them on demand.
+As was observed in the memory mapping article, the page table entries have some ‘spare’ space. Part of this indicates things like “this page is writeable” and the MMU checks each access request against this. Only if there is a valid mapping and the operation is legitimate will the MMU let the processor continue, otherwise it will indicate a memory fault.
+## Architecture
+
+The figure below shows a typical MMU ‘in situ’ This translates virtual to physical addresses, usually fairly quickly using a look-up (TLB). This also returns some extra information – copied from the page tables – such as access permissions. If the virtual address is found in the (virtually addressed) level 1 cache then the address translation is discarded as it is not needed; the permission check is still performed though because (for example) the particular access could be a user application hitting some cached operating system (privileged) data.
+The look-up takes some time, so it is usually done in parallel (“lookaside”) with the first level cache, which is why the level 1 cache is keyed with virtual addresses – something which is of importance during context switching.
+## Example page table structure
+
+The figure below shows a simple page table for a 32-bit machine using 4 KiB pages (212 bytes), leaving 20 bits to select the page (220 = 1048576 pages).
+## Implementation
+
+Because page tables are quite large – and there must be a set for each process – they, themselves need to be stored in memory. This means that they are accessible for the O.S. software to maintain them – they must be in O.S
+<--CHUNK-END-->
+space for security, of course – but makes the memory access process very slow (and energy inefficient, too) because (in principle) there is one (or more) O.S. look-ups before every user data transfer takes place. If this really had to happen the computer would be horrendously inefficient!
+In the ‘definition’, above, the MMU function was defined as a ‘black box’; a common set of page translations can be cached locally to avoid the extra accesses, most of the time. This is the function of the TLB.
+In practice the TLB will satisfy most memory requests without needing to check the ‘official’ page tables. Occasionally, the TLB misses: this then causes the MMU to stall the processor whilst it looks up the reference and (usually) updates the TLB contents. This process is known as “table walking”; it is usually a hardware job so you don’t have to worry about the details in this course unit.
+## Next
+
+
+<--CHUNK-END-->
+Note: the term “segmentation” is used in ways which differ in detail.
+The von Neumann computing architecture – by far the most common – has a single memory address space which is shared by code and data in all their forms. This is a flexible, and (largely) convenient, model.
+The memory is divided logically into a number of regions in any given application. The most obvious division is perhaps ‘code’ and ‘data’ where ‘code’ refers to the processor’s instructions – usually not modifiable at run-time and ‘data’ encompasses variables, which may be written. Note that not all ‘data’ might change, however: there is often ‘read-only data’, such as message strings or look-up tables, which are constant.
+Each process will have its own set of segments.
+It is sometimes convenient to group parts of memory together in these logical divisions, which are typically referred to as “segments”. By nature, a particular segment will have a set of attributes (such as can or cannot be written to) and different segments will have different attributes. There can be an arbitrary number of segments and, unlike pages, they will typically have different sizes.
+Historically, segments have sometimes been supported as (apparently) dedicated parts memories, each with addresses starting at 00…00 and finishing at some arbitrary limit (the segment size). These can be mapped into physical memory using dedicated hardware; this is cheap in hardware … but hardware is now cheap, so it is uncommon
+<--CHUNK-END-->
+(You may still see it in some literature; very unlikely in the Real World, currently.) Instead the logical segment will typically be mapped using hardware pages and the pages will be organised by software.
+Question: can you spot any advantages in using paging hardware over trying to map variable-sized segments into RAM?
+Mapping a segment using page tables is more expensive than having a single mapping entry for the segment, but it brings a couple of useful advantages.
+Because each page can be mapped individually, the segment does not need a (possibly, large) contiguous space in the physical memory. The pages can be used to fragment the segment. This gives much more flexibility and (largely) overcomes the problem of having enough memory in total to accommodate another segment, but not enough in one place.
+By implication, if necessary a logical segment can be increased in size whilst the program is running without worrying about overlapping other memory. This could happen if, for example, more memory was being demanded for the stack or the heap.
+With virtual memory only some of the pages in a segment – those which are actually in use – need be present in physical memory at any time.
+As an example, consider a code segment. In any given run, quite a lot of the code may never be needed: for example code to handle errors is important to have, but rarely executes. With paging and virtual memory, unwanted code (or data) need not occupy valuable physical memory as it is only fetched if it is needed.
+There’s a video here which might help explain this (8 mins.).
+This does not, necessarily, mean the operating system software is not keeping segment tables so that pages can be allocated appropriately.
+The name persists, of course, with ‘segmentation faults’
+<--CHUNK-END-->
+You can also find such logical divisions in software tools: a nice contemporary example is in the organisation of files which provide a standard for Unix ‘binaries’.
+Try typing file <binary> at a Unix command prompt, where ‘<binary>’ is a binary’s filename (/path).
+If you have access to tools such as GNU Binutils you can ‘pull apart’ ELF files with readelf. However, note that an ELF “section” is not quite the same as an O.S. “segment”. (readelf -l <binary> may help a bit.)
+As mentioned at the top of the page, the word “segmentation” is sometimes used in different ways. A particular example is Intel x86 segmentation which has a certain legacy and may be of passing interest.
+20
+30
+
+<--CHUNK-END-->
+You should be happy with the basic memory model before studying this article.
+A memory cache is a small, fast memory ‘close’ to the processor, used in high-performance computers. In the highest performance machines the cache may comprise two (or more) ‘levels’: smallest but fastest close to the processor, slower but larger further out. These are typically called “level 1” (the closest to the processor), “level 2” etc.
+This cache is only one example of where the principle of caching is used. For this course unit the principle is more important than any particular example, as the general principle of caching applies in several other circumstances.   If you like videos, there’s a brief (5 min.) introduction to caches here.
+Because speed is important, it is typical for level 1 cache to use virtual addresses, i.e. it is a “virtual cache”. Lower cache levels will typically be below any memory mapping and thus use physical addresses.
+The cache is largely self-managing (i.e. the hardware does the job) but occasionally needs software intervention – the job of an operating system, when present. Most obviously (perhaps) is at context-switch time, after which a particular virtual address will have a different meaning, thus a virtual (level 1) cache will be invalid and requires flushing.
+A typical level 2 cache may use physical addresses and, as these are unique, may retain its contents through multiple process changes, possibly until they become useful again to the current process.
+The operating system scheduler needs to be aware of any caches which must be flushed.
+### Multiprocessor cache hierarchy
+
+A shared-memory multiprocessor (such as a typical workstation) will probably have separate level 1 caches for instructions and data (using virtual addresses)
+<--CHUNK-END-->
+Further down the cache hierarchy the use of physical addresses means that all the processor ‘cores’ can share a physical cache; this gives better overall utilisation.
+20
+30
+
+<--CHUNK-END-->
+This is not the place to treat caches and caching in any great detail; that would be the domain of a more hardware-oriented course unit. However the principle of caching is used in several places in a typical operating system, so it is important to have some appreciation of cache action.
+Fundamentally, in computers a cache is a copy of a small subset of some large data set which (because it is small) is fast and convenient to get at.
+Analogy: you might ‘cache’ some books on your desk – more convenient than visiting the library on a daily basis.   Example: your web browser probably ‘caches’ pages which you have visited, in case you want to visit again; if you do it is quicker than re-fetching them from around the world.
+To work effectively, caches rely on:
+Temporal locality: if something was used recently it will probably be used again.
+Spacial locality: if you used one address you will probably want ‘nearby’ addresses;
+Executing computer processes usually have strong locality (both kinds!) with respect to both code and data.
+### Cache operation (in short)
+
+A cache monitors outgoing requests (such as an address heading towards memory) and, if it recognises it, intercepts the request and satisfies it locally. Statistically, this increases the efficiency (i.e. higher speed and lower energy needs).
+If the cache doesn’t recognise the reference the operation proceeds as it would have without the cache; however the reference may be cached as well as future references are quite probable.
+### Examples of caching in operating systems:
+
+The memory cache (often just the “cache”). This intercepts memory addresses in loads and stores.
+The Translation Look-aside Buffer (TLB)
+<--CHUNK-END-->
+This intercepts page translations.
+Virtual Memory where the addressable memory itself is the cache and the overall physical memory is enlarged using cheaper backing store, such as magnetic disk.
+A hard disk drive is slow, compared to a computer’s electronic RAM – even compared to the ‘slow’ main memory. An operating system can use some RAM as a “page cache” which keeps copies of data which are logically on disk which may be wanted again in the near future.
+These may include both files which have been read recently and evicted pages. This cache can also act as a write buffer for the disk.
+### Examples of caching not in operating systems:
+
+A network router needs to look up how to forward each packet and there can be very many possible destinations. However it is likely that if one packet is routed to a particular place then more examples will follow shortly. Thus, having performed one translation, recent routeing translations may be cached for efficiency.
+A Web browser typically keeps the most recently accessed pages in local filestore. Users tend to revisit or return to pages so this alleviates the need for slow, network communications in future
+<--CHUNK-END-->
+Of course, some pages are ‘volatile’ and need fetching again, so the issue of cacheability is also important.
+Think of your own example …
+### Cache principle, demonstration
+
+This demonstration is intended to illustrate a principle; the items in the cache will not really be high-level language statements! However they serve as ‘things’ which can be fetched and cached.
+Note that:
+initially execution is quite slow, as each ‘instruction’ causes a cache miss with a corresponding delay.
+program behaviour tends to have locality; once the cache is filled it speeds up execution considerably.
+as the program continues, sometimes there are more cache misses as the “working set” changes.
+the numbers on the right of the cache indicate the last time each line was accessed.
+This is used when selecting a line to replace using the Least Recently Used (LRU) algorithm.
+the miss penalty here is proportionately quite small.
+A more typical penalty would be rather dull to watch though.
+“IPC” (Instructions Per Clock) shows the average number of lines of code executed per cycle.
+In an ‘ideal’ world this would be 1.00. Without the cache this would be 0.33.
+Observe how this roughly stabilises on a compromise value once the cache is being exploited.
+The example is contrived so that items are cached in different places in different iterations: it may be worth (once) running ~100+ steps to see this.
+## Next
+
+
+<--CHUNK-END-->
+Memory Mapping involves page table look-up. The page tables are large enough to need to be stored in memory. Thus, with a (not uncommon) two-level page table scheme every memory access is logically preceded by two more memory reads to translate the virtual address to the physical address.
+Slowing down by 200% is not generally acceptable! Thus, when a translation has been done (by hardware inserting the extra operations) the result is cached, associating the input virtual page address with the resolved physical page. Because there only needs to be one TLB entry per page (not per address) and software typically exhibits locality quite a small TLB can accommodate most software efficiently; this can be fast, specialised hardware.
+Even so, a TLB look-up takes time. Thus, in high performance systems the first level of cache usually uses virtual addresses and the physical address is only needed if the first level cache misses. It is therefore logically in parallel with the “level-1 cache”, hence the “Look-aside”.
+As far as the operating system is concerned, the TLB can be left to do its job until there is a change in the underlying page tables. This will occur, for example, at a context switch
+<--CHUNK-END-->
+At this point the TLB is usually invalidated (“flushed”) by the software and has to refill with the new translations; this incurs a performance penalty, of course.
+### A form of caching
+
+The TLB holds a recently used set of translations.
+Input: a virtual address (page)
+Outputs: a physical address and some page permissions etc.
+(or an “I don’t know” indication).
+Although it is not itself called a ‘cache’ it certainly uses the principle of caching.
+Because the working set of pages is quite small, a small TLB can cache nearly all page translations in practice, leading to a high hit rate and thus high efficiency.
+## Next
+
+
+<--CHUNK-END-->
+This is a simple overview of computer memory. It covers the view which is seen by applications software. For a more ‘operating systems’ view, continue to virtual memory.
+Computers hold data in a memory which is a (large) array of equal-sized storage spaces. By far the commonest strategy is that these locations store bytes.
+Each location has its own identifier: this is usually expressed as a (hexadecimal) number. This is the address of the location.
+Inside the store is a value which is the data. The data can represent whatever you choose it to represent: numbers, letters, colours …
+That’s basically it.
+The image depicts (part of) a small memory with an 8-bit address. Practical memories are usually somewhat larger.
+Given an address, the data stored at that address can be looked up. Most computer memory can also be written to so you can store variables. A software variable name is simply an alias (in one way or another) for an address.
+This address space – the total number of different locations which could be addressed – may or may not be fully populated with actual memory.
+Most of the memory will be Random Access Memory (RAM), which is somewhat misleadingly named. “Random” has nothing random about it: it simply means that any address is as good as any other as far as the machine is concerned.
+“RAM” also implies (by convention) that the memory is writeable
+<--CHUNK-END-->
+This is true but other memories (such as the eponymous Read Only Memory (ROM) can also be ‘randomly’ accessed.
+Referring to the figure above:
+What is the data in location 04?
+The data byte is 48.
+There is only ever a single answer and every byte must contain something, even if you don’t know what it is.
+A location may be “undefined” - which means that attempting to access that location will yield a random value - but it can never be truly “empty”.
+At which (visible) address(es) is the datum 6C stored?
+This byte occurs at both addresses 06 and 07.
+It may also be present in other places which we can’t see.
+20
+30
+
+<--CHUNK-END-->
+This is an overview: you may need to explore some constituent parts before it becomes completely clear.
+One of the most important functions of an operating system is to provide an abstracted virtual environment for applications code. An application has an idealised view of the machine (any machine) it is running on. A major consideration is the address space of the system.
+Different machines may have different amounts of physical memory installed: it depends on what you pay for. However, in a virtual memory system the application can simply assume that ’all’ the memory – the amount being set by the virtual machine size – is present and it can use any which it wants. This is also independent of other applications which may be running concurrently – which can also use any address they want, including those which conflict.
+To achieve this, each process has a private map which translates the virtual addresses (the ones the application generates) into non-conflicting physical addresses. This solves any potential address address conflicts. Any application only knows its own virtual addresses; the physical addresses are only known only within the O.S.
+### Benefits
+
+It must first be noted that the amount of memory available has followed ’Moore’s Law’ and that the (virtual) address space of popular processors has had to mirror that
+<--CHUNK-END-->
+For general convenience (and, somewhat, by convention) although memory sizes double or quadruple in each process generation, architectures have doubled the number of bits, thus progressed in fewer, bigger steps.
+The first really widespread microprocessors were “8-bit” (which, typically used 16-bit addresses); the next generation were “16-bit” (address sizes being expanded by various stratagems to 20- or 24-bits); thence to “32-bit” machines (addresses are/were often also 32-bits) and currently to “64-bit” processors (addresses may be reduced to (say) 56 bits).
+Early in a processor generation it is infeasible to fill the available address space with physical memory (even for a single process). Virtual memory allows the physical memory to appear in the places it is wanted.
+Late in a processor generation there may be more physical memory than fits in the address space. Virtual memory allows the physical memory to be used sensibly to support multiple processes without needing to ’swap’ (see below).
+Very few processes use the whole of their virtual address space.
+It may be hard to predict which virtual addresses a given process chooses to use.
+There is, typically, significant locality of access: if one address is used it is likely that addresses around it are also used.
+Examples: instructions in a program; stack data; objects … These properties are therefore exploited when memory mapping virtual to physical addresses, a process usually called “address translation”.
+### Swapping
+
+Mapping the memory works okay providing that the sum of the memory used by all current applications does not exceed the size of the installed physical memory
+<--CHUNK-END-->
+If that happens then some more storage needs to be found: the solution is to use some secondary storage which is likely to be a magnetic disk.
+If the demand on the physical store becomes too great, some pages are copied onto disk to free up some new space. The pages are chosen by (inspired) guesswork as to which will probably not be needed in the near future by a scheduling algorithm; this is the same principle as caching. The process is usually referred to as “paging” or “swapping”.
+Swapping keeps everything running but each swap is time-consuming, so as swapping increases the applications (i.e. “the computer”) will slow down. You will probably have witnessed this. Buying more (electronic) memory (RAM) will delay the point where extensive swapping becomes necessary – hence a ’faster’ machine if you want to run lots of applications or memory-hungry applications.
+Sounds familiar?
+### How is it done?
+
+Answer: with a combination of hardware and (operating system) software.
+This is explained across various articles; the key concepts are probably:
+Memory mapping keeps the application code supplied with memory.
+Memory protection keeps the applications secure and separated.
+The MMU is the hardware which implements all this.
+Paging supports swapping to disk.
+Video (12 mins.) on virtual (or, possibly, “virutal”!) memory.
+### Memory sizes
+
+The extent of the virtual address space is set by the hardware architecture of the machine: a “64-bit” machine can address 264 bytes
+<--CHUNK-END-->
+This is what the programmer sees.
+The extent of the physical address space is fixed in hardware and is often (but does not have to be) the same size as the virtual address space.
+Contemporary x86-64 system ’only’ support a 48-bit physical address (256 TiB), for example.
+The amount of physical RAM is anything up to the supported address space, subject to limitations of cost, power/cooling and room in the machine.
+## Next
+
+
+<--CHUNK-END-->
+This page looks at the software tasks involved in managing memory as a resource; for an overview of the hardware used to support memory mapping and memory protection, see MMU.
+For one reason or another, there is a limited memory resource in a computer. In a simple system, without virtual memory, it is perhaps most obvious that, as one process uses up some proportion of the memory it becomes unavailable for others. With virtual memory and paging some of the restrictions can be bypassed (up to a point) but the problems still arise.
+Any process will require one or more logical memory segments. These are contiguous parts of the address space. In some cases the memory can be allocated when the process starts – for example the program code is probably (but not always!) a known length and there is likely to be some static data. In other cases, memory is allocated dynamically so the exact memory needs cannot be determined in advance.
+Example: every time you create a new() instance in Java there are some more variables created; the computer has to keep them somewhere.
+Whilst the pattern of segments may vary there are some typical example areas which occur in most processes.
+Memory management can be done by both the application and the O.S. Sometimes an application will request ‘large’ blocks of memory and then allocate from them, thus saving some (expensive) system calls. However in the end it is the OS which is responsible for the memory as a resource and the management principles are similar, even if the application takes on some of the responsibility.
+The operating system can keep records of the memory in use and – in a virtual memory environment – which physical pages are in use, and for what.
+The O.S
+<--CHUNK-END-->
+may need to:
+allocate spaces when a process is loaded
+set up pages in a virtual memory system
+set up pages in a virtual memory system
+manage access permissions
+allocate additional space if the stack or heap overflow
+keep track of a process’ use and recover the resource when the process terminates.
+## Next
+
+
+<--CHUNK-END-->
+The size of the virtual address space of a particular computer processor is fixed by the architecture of that processor.
+Because artificial computers are almost all digital, binary systems, the size is a typically a power of two – and most likely a power of (a power of 2). Thus we see:
+16-bit spaces with 2^16 = 64Ki = 65,536 locations
+32-bit spaces with 2^32 = 4Gi = 4,294,967,296 locations
+64-bit spaces with 2^64 = 16Ei = 18,446,744,073,709,551,616 locations
+Although it has varied in the past – and still does in a few circumstances – it’s fairly safe to assume “locations” are (8-bit) bytes in most cases.
+The physical address space tends to follow this trend although not all the address bits are necessarily used in a particular era.
+The physical memory size is governed by technology and economics. As technology progresses the price-per-bit of memory falls, thus feasible memory sizes have expanded, loosely in line with Moore’s Law. Personal economics depend (of course) on what the buyer can afford at the time.
+The result has been that a particular machine architecture will appear where the address space is ‘much larger’ that most users can populate with physical memory, and thus is mostly empty whilst the physical RAM is in short supply.
+As time goes by, memory becomes more affordable and the address space ‘looks’ smaller. Somewhat later there may be mechanisms to allow mapping of a physical address space which is larger that the virtual space visible to any single process. This is still useful as the memory can hold data from several processes concurrently.
+(Alice and Bob seem to be traditional example users!)
+Finally, new machine architectures appear with bigger address spaces and the cycle starts again.
+## Next
+
+
+<--CHUNK-END-->
+Usually a virtual memory system will divide its memory into pages. A page is (basically) a fixed size block of memory. The principle is that any page can be mapped into any page frame, invisibly to the user.
+Think of all the pages’ data really residing on the disk. The memory simply holds a copy of some of these pages. In this way the memory is just caching recently used pages.
+In reality it probably won’t quite be like this (to save space) but it is a good conceptual model to start with.
+### Page look-up
+
+The processor produces a virtual address from which the MMU looks up a page reference; the process is illustrated in the memory mapping article. If the page is present in physical memory the translated (physical) address is passed on and everything just works. The look-up is all done by the MMU hardware so this can all run as part of a user’s application process.
+If the virtual page is marked as not resident, things become more complicated and the operating system needs to intervene. This is triggered by the MMU hardware indicating a page fault. This loading of memory when required is sometimes referred to as “demand paging”.
+### Page faults
+
+A page fault is a form of a memory fault: a hardware-level exception which causes a form of operating system call. The information about the ‘problem’ is maintained so the processor can recover.
+A page fault is caused when a virtual address fails to be translated into a physical address – usually because the page is not present in the physical memory
+<--CHUNK-END-->
+They are usually recoverable-from, so “fault” is a bit of a misnomer!
+The exception handler (part of the O.S.) must determine that this is a page fault and not some other form of memory fault. This checks that the virtual address and operation (such as a write) is legitimate.
+Some faults will be due to bugs, hacking etc. These will be trapped out here and the process terminated.
+If this is a genuine page fault the page must now be “swapped in”.
+### Paging (a.k.a. “swapping”)
+
+The O.S. has to find a page frame for the desired page. In a memory mapped system this can be anywhere in the physical RAM; it may involve evicting an existing page. There are many factors which can be considered when choosing a page to evict.
+If the evicted page is simply a copy of a page on disk, it can simply be overwritten.
+This is usually true of code pages – and sometimes data too.
+If the evicted page has been modified then it must be copied back to disk – a time-consuming process.
+The chosen physical page is loaded with the appropriate contents from disk (or an equivalent store, but probably disk!). The page tables are modified appropriately.
+### Restart
+
+The page tables need to be updated to reflect the new state of the system; the memory mapping has changed.
+The O.S. sorts out the state of the faulted process; for most processors this means ensuring that it was as if it had stopped just before the faulting operation.
+The faulting operation is ‘returned’ to as if it had been a ‘call’ operation
+<--CHUNK-END-->
+This time the page should not fault and the application proceeds.
+The paging process is not visible to the application code; it need not care if it happens or not. This is a big advantage. The process may be ‘visible’ to the user in the sense that it is time consuming, so ‘running out’ of RAM can result in a lot of paging and a noticeable slowdown in overall execution speed.
+### In the meantime …
+
+All this moving data to/from disk is very time consuming. The disk access time is probably in excess of 10 ms which might be tens of millions of instruction times. Roughly double this estimate if a write is needed as well as a read.
+Paging is going to take some time: probably several milliseconds if the page has to be fetched from magnetic disk.
+Rather than tie up the processor, the job of data movement can be passed to a DMA channel and the process can be blocked.
+The scheduler can then be called to find something else to run whilst data is (un)loaded in the background.
+The completion of the DMA transfer(s) will unblock this process again and – sometime after that – it will be rescheduled.
+This system is only running a single process. It has only half the number of pages of physical memory needed to completely fill the virtual address space.
+Click on a virtual memory page to request an access: clicking on the left-hand side simulates a read access; clicking on the right-hand side simulates a write access
+<--CHUNK-END-->
+In either case the page will be fetched if it is not already present in the physical memory.
+Remember: the virtual memory is just a space in which the physical memory appears.
+When a write has taken place the page is ‘dirty’ as the copy on the disk will be out of date. This is indicated by a darker colour in the physical memory.
+Buttons:
+“Cyclic” switches to the default cyclic page replacement policy.
+“LRU” switches to a Least Recently Used page replacement policy.
+“Dirty?” preferentially evicts ‘clean’ pages.
+Evicting clean pages preferentially makes the paging process faster (no write-back) but reduces the available choices when dirty pages are finished are no longer being used.
+Some compromise is required in practice.
+Evicting clean pages preferentially makes the paging process faster (no write-back) but reduces the available choices when dirty pages are finished are no longer being used.
+Some compromise is required in practice.
+In this model, each disk operation costs 4 cycles: in practice this would be orders of magnitude higher, but that would be uninteresting to watch. Whilst waiting, the processor (you in the demonstration!) would normally context switch whilst the disk transfer(s) would be handled using DMA.
+These are all caching principles.
+In the demonstration, note:
+Status messages describe the sequence of processes as they take place.
+The time is in fixed units and the count is the number of operations completed.
+‘IPC’ is the ratio of these values: ideally 1, rarely even close to that.
+Note that paging takes some time and the computer can do something else whilst it’s waiting. ’Something else’ might cause another page fault
+<--CHUNK-END-->
+In the worst case this can lead to page thrashing.
+### Want more detail?
+
+There is another article with more detail on (and a picture of!) the states which may be used to control and track a page of virtual memory.
+### Minor page faults
+
+A page fault may not result in disk activity because the page may already be present! Imagine starting a second copy of some large application: the O.S. can spot this and share the code; when asked for a new virtual page the page tables can be pointed to the existing copy. This saves time and memory.
+A simple, if slightly misleading, view of a paged virtual memory is to imagine all the storage logically residing on magnetic disk storage; when data is wanted the computer’s RAM acts as a cache for the parts which are interesting at the time.
+This is slightly inaccurate in detail because a cache is typically (logically) much smaller than the store it is caching and just keeps a copy of data whereas a workstation’s RAM and disk “swap space” are closer to the same size, so data may end up being swapped. However it is a useful way to illustrate the operation.
+## Cache operation
+
+A request is made to memory. The cache intercepts the request and provides the data if it can be satisfied locally; otherwise it fetches the data from the slower RAM. Having performed a fetch it is likely that it keeps the ‘new’ data in the cache, which might entail evicting some ‘old’ data, back to to the slower RAM.
+## Paging
+
+A request is made to RAM. The MMU intercepts (and translates) the request and fetches the data if it is in RAM; otherwise it fetches the data from the slower disk
+<--CHUNK-END-->
+Having performed a fetch it is likely that it keeps the ‘new’ data in the RAM, which might entail evicting some ‘old’ data, back to to the slower disk.
+In both cases it is assumed that locality results in a ‘hit’ most of the time – a fairly safe bet for most code and data structures.
+## Next
+
+
+<--CHUNK-END-->
+### Why protect memory?
+
+The computer’s memory is a resource needed by anything and everything which executes. On the other hand each process wants its own private space which is inaccessible to other processes. This prevents contamination – either accidental or malicious – from one process to another (and, maybe, from one user to another).
+It is also important to protect the operating system space from being altered by the user – except in carefully controlled ways which are provided by system calls. This includes:
+operating system code
+operating system data
+memory-mapped peripheral devices
+Some protection can be given by memory mapping; if a process has a limited memory map then it can’t ‘see’ memory which isn’t currently ‘mapped in’. However something (i.e. the operating system) has to be able to do the mapping and any user application has to be able to interact with operating system services.
+Thus there is liable to be some memory protection which validates a particular access, using both the requested (virtual) address, the particular action and the processor’s privilege at the time.
+If an access of a disallowed type or without adequate privilege is attempted, there will be a hardware exception used to invoke an operating system handler.
+## Kinds of permissions:
+
+The sort of permissions which might be implemented are:
+No access
+Supervisor read-only
+Supervisor read/write
+Read-only
+Read/write by any privilege level
+These will be specified in the MMU. The exact method may vary but they will typically be on a ‘per segment’ or ‘per page’ basis. Page-based schemes are probably the most common now, so the following description may assume this in places.
+Here is an example set/coding of permissions.
+This may be used to mark a page which is not present
+<--CHUNK-END-->
+This could be because the process has not been granted access to this part of the address space, in which case it indicates a segmentation fault, as in something went wrong.
+An operating system might also mark a legitimate page as ‘no access’ in a virtual memory system if it has no associated physical memory at this moment; this is a recoverable page fault.
+More subtly, an operating system may also decide to mark some valid pages as ‘no access’ if it is trying to determine if they are still in use. In such a case access is restored if the page is used again; on the other hand, if it is genuinely out of use after some time of waiting, it may be evicted. This last case is an example of the sort of ‘clever-but-nasty’ optimisations operating systems’ writers get up to!
+In most cases, instruction code is fixed and should not be written to. There may also be data structures which are fixed – for example message strings. Marking these areas as ‘read only’ prevents accidental overwriting (e.g. from a rogue pointer dereference) and makes the process more robust.
+Although viewing an operating system’s private memory is not directly harmful, preventing a user process from doing this can make life more difficult for hackers and saboteurs.
+The operating system’s data spaces are obviously sensitive areas. Preventing a user from altering anything in there is obviously important. When something does need to be changed a system call provides a trusted means of access which can apply tests such as range-checking values in software.
+The sort of permission which a user’s data pages would have. The operating system will also have full access although, in practice, it won’t usually want to.
+20
+30
+
+<--CHUNK-END-->

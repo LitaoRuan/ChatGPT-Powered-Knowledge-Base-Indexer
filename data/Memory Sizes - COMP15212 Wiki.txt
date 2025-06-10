@@ -1,0 +1,14 @@
+The size of the virtual address space of a particular computer processor is fixed by the architecture of that processor.
+Because artificial computers are almost all digital, binary systems, the size is a typically a power of two – and most likely a power of (a power of 2). Thus we see:
+16-bit spaces with 2^16 = 64Ki = 65,536 locations
+32-bit spaces with 2^32 = 4Gi = 4,294,967,296 locations
+64-bit spaces with 2^64 = 16Ei = 18,446,744,073,709,551,616 locations
+Although it has varied in the past – and still does in a few circumstances – it’s fairly safe to assume “locations” are (8-bit) bytes in most cases.
+The physical address space tends to follow this trend although not all the address bits are necessarily used in a particular era.
+The physical memory size is governed by technology and economics. As technology progresses the price-per-bit of memory falls, thus feasible memory sizes have expanded, loosely in line with Moore’s Law. Personal economics depend (of course) on what the buyer can afford at the time.
+The result has been that a particular machine architecture will appear where the address space is ‘much larger’ that most users can populate with physical memory, and thus is mostly empty whilst the physical RAM is in short supply.
+As time goes by, memory becomes more affordable and the address space ‘looks’ smaller. Somewhat later there may be mechanisms to allow mapping of a physical address space which is larger that the virtual space visible to any single process. This is still useful as the memory can hold data from several processes concurrently.
+(Alice and Bob seem to be traditional example users!)
+Finally, new machine architectures appear with bigger address spaces and the cycle starts again.
+## Next
+

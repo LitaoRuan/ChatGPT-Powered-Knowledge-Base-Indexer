@@ -1,0 +1,20 @@
+This is a simple overview of computer memory. It covers the view which is seen by applications software. For a more ‘operating systems’ view, continue to virtual memory.
+Computers hold data in a memory which is a (large) array of equal-sized storage spaces. By far the commonest strategy is that these locations store bytes.
+Each location has its own identifier: this is usually expressed as a (hexadecimal) number. This is the address of the location.
+Inside the store is a value which is the data. The data can represent whatever you choose it to represent: numbers, letters, colours …
+That’s basically it.
+The image depicts (part of) a small memory with an 8-bit address. Practical memories are usually somewhat larger.
+Given an address, the data stored at that address can be looked up. Most computer memory can also be written to so you can store variables. A software variable name is simply an alias (in one way or another) for an address.
+This address space – the total number of different locations which could be addressed – may or may not be fully populated with actual memory.
+Most of the memory will be Random Access Memory (RAM), which is somewhat misleadingly named. “Random” has nothing random about it: it simply means that any address is as good as any other as far as the machine is concerned.
+“RAM” also implies (by convention) that the memory is writeable. This is true but other memories (such as the eponymous Read Only Memory (ROM) can also be ‘randomly’ accessed.
+Referring to the figure above:
+What is the data in location 04?
+The data byte is 48.
+There is only ever a single answer and every byte must contain something, even if you don’t know what it is.
+A location may be “undefined” - which means that attempting to access that location will yield a random value - but it can never be truly “empty”.
+At which (visible) address(es) is the datum 6C stored?
+This byte occurs at both addresses 06 and 07.
+It may also be present in other places which we can’t see.
+20
+30

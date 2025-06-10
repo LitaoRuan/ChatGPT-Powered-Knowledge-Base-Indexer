@@ -1,0 +1,14 @@
+Memory Mapping involves page table look-up. The page tables are large enough to need to be stored in memory. Thus, with a (not uncommon) two-level page table scheme every memory access is logically preceded by two more memory reads to translate the virtual address to the physical address.
+Slowing down by 200% is not generally acceptable! Thus, when a translation has been done (by hardware inserting the extra operations) the result is cached, associating the input virtual page address with the resolved physical page. Because there only needs to be one TLB entry per page (not per address) and software typically exhibits locality quite a small TLB can accommodate most software efficiently; this can be fast, specialised hardware.
+Even so, a TLB look-up takes time. Thus, in high performance systems the first level of cache usually uses virtual addresses and the physical address is only needed if the first level cache misses. It is therefore logically in parallel with the “level-1 cache”, hence the “Look-aside”.
+As far as the operating system is concerned, the TLB can be left to do its job until there is a change in the underlying page tables. This will occur, for example, at a context switch. At this point the TLB is usually invalidated (“flushed”) by the software and has to refill with the new translations; this incurs a performance penalty, of course.
+### A form of caching
+
+The TLB holds a recently used set of translations.
+Input: a virtual address (page)
+Outputs: a physical address and some page permissions etc.
+(or an “I don’t know” indication).
+Although it is not itself called a ‘cache’ it certainly uses the principle of caching.
+Because the working set of pages is quite small, a small TLB can cache nearly all page translations in practice, leading to a high hit rate and thus high efficiency.
+## Next
+

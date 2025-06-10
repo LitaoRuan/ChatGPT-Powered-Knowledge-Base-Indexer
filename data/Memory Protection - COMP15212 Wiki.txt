@@ -1,0 +1,29 @@
+### Why protect memory?
+
+The computer’s memory is a resource needed by anything and everything which executes. On the other hand each process wants its own private space which is inaccessible to other processes. This prevents contamination – either accidental or malicious – from one process to another (and, maybe, from one user to another).
+It is also important to protect the operating system space from being altered by the user – except in carefully controlled ways which are provided by system calls. This includes:
+operating system code
+operating system data
+memory-mapped peripheral devices
+Some protection can be given by memory mapping; if a process has a limited memory map then it can’t ‘see’ memory which isn’t currently ‘mapped in’. However something (i.e. the operating system) has to be able to do the mapping and any user application has to be able to interact with operating system services.
+Thus there is liable to be some memory protection which validates a particular access, using both the requested (virtual) address, the particular action and the processor’s privilege at the time.
+If an access of a disallowed type or without adequate privilege is attempted, there will be a hardware exception used to invoke an operating system handler.
+## Kinds of permissions:
+
+The sort of permissions which might be implemented are:
+No access
+Supervisor read-only
+Supervisor read/write
+Read-only
+Read/write by any privilege level
+These will be specified in the MMU. The exact method may vary but they will typically be on a ‘per segment’ or ‘per page’ basis. Page-based schemes are probably the most common now, so the following description may assume this in places.
+Here is an example set/coding of permissions.
+This may be used to mark a page which is not present. This could be because the process has not been granted access to this part of the address space, in which case it indicates a segmentation fault, as in something went wrong.
+An operating system might also mark a legitimate page as ‘no access’ in a virtual memory system if it has no associated physical memory at this moment; this is a recoverable page fault.
+More subtly, an operating system may also decide to mark some valid pages as ‘no access’ if it is trying to determine if they are still in use. In such a case access is restored if the page is used again; on the other hand, if it is genuinely out of use after some time of waiting, it may be evicted. This last case is an example of the sort of ‘clever-but-nasty’ optimisations operating systems’ writers get up to!
+In most cases, instruction code is fixed and should not be written to. There may also be data structures which are fixed – for example message strings. Marking these areas as ‘read only’ prevents accidental overwriting (e.g. from a rogue pointer dereference) and makes the process more robust.
+Although viewing an operating system’s private memory is not directly harmful, preventing a user process from doing this can make life more difficult for hackers and saboteurs.
+The operating system’s data spaces are obviously sensitive areas. Preventing a user from altering anything in there is obviously important. When something does need to be changed a system call provides a trusted means of access which can apply tests such as range-checking values in software.
+The sort of permission which a user’s data pages would have. The operating system will also have full access although, in practice, it won’t usually want to.
+20
+30

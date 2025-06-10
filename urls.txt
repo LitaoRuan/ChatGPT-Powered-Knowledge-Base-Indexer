@@ -1,0 +1,12 @@
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Memory
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Memory_Management
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Memory_Sizes
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Memory_Mapping
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Memory_Segmentation
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Memory_Protection
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Virtual_Memory
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Paging
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Memory_Management_Unit_(MMU)
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Caching
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Cache
+https://wiki.cs.manchester.ac.uk/COMP15212/index.php/Translation_Look-aside_Buffer_(TLB)
