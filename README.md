@@ -27,9 +27,10 @@ poetry install
 
 In the project root, create a .env file with the following content:
 ```bash
-AZURE_OPENAI_API_KEY=your_azure_api_key
-AZURE_OPENAI_ENDPOINT=https://your-resource-name.cognitiveservices.azure.com
-AZURE_OPENAI_API_VERSION=2023-05-15
+AZURE_OPENAI_API_KEY=6bR0hwgRDji8eZlHCkA6zo6bZM2MUZ6WT1h8dnd4TxLvaAjo6DKIJQQJ99BFACHYHv6XJ3w3AAAAACOGc5f1
+AZURE_OPENAI_ENDPOINT=https://litao-mbnnzbvd-eastus2.cognitiveservices.azure.com
+AZURE_OPENAI_API_VERSION1=2023-05-15
+AZURE_OPENAI_API_VERSION2=2024-12-01-preview
 AZURE_OPENAI_DEPLOYMENT=text-embedding-ada-002
 ```
 ⚠️ Do not commit this file. It's excluded via .gitignore.
