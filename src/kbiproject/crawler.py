@@ -74,3 +74,8 @@ async def main():
         print("All pages processed and saved individually.")
 
 asyncio.run(main())
+
+
+
+# MCP https://github.com/microsoft/playwright-mcp
+# https://modelcontextprotocol.io/introduction

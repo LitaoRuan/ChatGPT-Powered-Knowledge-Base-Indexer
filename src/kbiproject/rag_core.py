@@ -1,12 +1,20 @@
 import faiss
 import numpy as np
 from openai import AzureOpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load from .env
+
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+api_version = os.getenv("AZURE_OPENAI_API_VERSION2")
 
 # Azure OpenAI config
 client = AzureOpenAI(
-    api_key="6bR0hwgRDji8eZlHCkA6zo6bZM2MUZ6WT1h8dnd4TxLvaAjo6DKIJQQJ99BFACHYHv6XJ3w3AAAAACOGc5f1",
-    azure_endpoint="https://litao-mbnnzbvd-eastus2.cognitiveservices.azure.com/",
-    api_version="2024-12-01-preview"
+    api_key=api_key,
+    azure_endpoint=f"{endpoint}",
+    api_version=api_version
 )
 
 chat_model = "gpt-4o"

@@ -2,13 +2,24 @@ import os
 import faiss
 import numpy as np
 from openai import AzureOpenAI
+from dotenv import load_dotenv
+
+load_dotenv()  # Load from .env
+
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+api_version = os.getenv("AZURE_OPENAI_API_VERSION1")
+deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+
 
 # Azure OpenAI Config
 client = AzureOpenAI(
-    api_key="6bR0hwgRDji8eZlHCkA6zo6bZM2MUZ6WT1h8dnd4TxLvaAjo6DKIJQQJ99BFACHYHv6XJ3w3AAAAACOGc5f1",
-    azure_endpoint="https://litao-mbnnzbvd-eastus2.cognitiveservices.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-05-15",
-    api_version="2023-05-15"
+    api_key=api_key,
+    azure_endpoint=f"{endpoint}/openai/deployments/{deployment}/embeddings",
+    api_version=api_version
 )
+
+# remove key, hide environment variables
 
 embedding_model = "text-embedding-ada-002"
 input_folder = "data"
